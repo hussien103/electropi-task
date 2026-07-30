@@ -1,0 +1,10 @@
+CREATE TYPE "Role" AS ENUM ('ADMIN','MEMBER');
+CREATE TYPE "TaskStatus" AS ENUM ('TODO','IN_PROGRESS','DONE');
+CREATE TYPE "Priority" AS ENUM ('LOW','MEDIUM','HIGH','URGENT');
+CREATE TABLE "User" ("id" TEXT PRIMARY KEY,"name" TEXT NOT NULL,"email" TEXT NOT NULL UNIQUE,"passwordHash" TEXT NOT NULL,"role" "Role" NOT NULL DEFAULT 'MEMBER',"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "Project" ("id" TEXT PRIMARY KEY,"name" TEXT NOT NULL,"description" TEXT NOT NULL DEFAULT '',"creatorId" TEXT NOT NULL REFERENCES "User"("id"),"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updatedAt" TIMESTAMP(3) NOT NULL);
+CREATE TABLE "ProjectMember" ("projectId" TEXT NOT NULL REFERENCES "Project"("id") ON DELETE CASCADE,"userId" TEXT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,PRIMARY KEY ("projectId","userId"));
+CREATE TABLE "Task" ("id" TEXT PRIMARY KEY,"projectId" TEXT NOT NULL REFERENCES "Project"("id") ON DELETE CASCADE,"title" TEXT NOT NULL,"description" TEXT NOT NULL DEFAULT '',"status" "TaskStatus" NOT NULL DEFAULT 'TODO',"priority" "Priority" NOT NULL DEFAULT 'MEDIUM',"dueDate" TIMESTAMP(3) NOT NULL,"creatorId" TEXT NOT NULL REFERENCES "User"("id"),"assigneeId" TEXT REFERENCES "User"("id"),"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updatedAt" TIMESTAMP(3) NOT NULL);
+CREATE TABLE "AuditLog" ("id" TEXT PRIMARY KEY,"taskId" TEXT NOT NULL REFERENCES "Task"("id") ON DELETE CASCADE,"userId" TEXT NOT NULL REFERENCES "User"("id"),"fromStatus" "TaskStatus" NOT NULL,"toStatus" "TaskStatus" NOT NULL,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX "Task_projectId_status_priority_idx" ON "Task"("projectId","status","priority");
+CREATE INDEX "AuditLog_taskId_createdAt_idx" ON "AuditLog"("taskId","createdAt");

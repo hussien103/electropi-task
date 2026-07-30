@@ -1,0 +1,67 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+enum Role { ADMIN MEMBER }
+enum TaskStatus { TODO IN_PROGRESS DONE }
+enum Priority { LOW MEDIUM HIGH URGENT }
+
+model User {
+  id String @id @default(cuid())
+  name String
+  email String @unique
+  passwordHash String
+  role Role @default(MEMBER)
+  createdAt DateTime @default(now())
+  memberships ProjectMember[]
+  createdProjects Project[] @relation("ProjectCreator")
+  createdTasks Task[] @relation("TaskCreator")
+  assignedTasks Task[] @relation("TaskAssignee")
+  auditLogs AuditLog[]
+}
+model Project {
+  id String @id @default(cuid())
+  name String
+  description String @default("")
+  creatorId String
+  creator User @relation("ProjectCreator", fields: [creatorId], references: [id])
+  members ProjectMember[]
+  tasks Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model ProjectMember {
+  projectId String
+  userId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([projectId, userId])
+}
+model Task {
+  id String @id @default(cuid())
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title String
+  description String @default("")
+  status TaskStatus @default(TODO)
+  priority Priority @default(MEDIUM)
+  dueDate DateTime
+  creatorId String
+  creator User @relation("TaskCreator", fields: [creatorId], references: [id])
+  assigneeId String?
+  assignee User? @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  auditLogs AuditLog[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([projectId, status, priority])
+}
+model AuditLog {
+  id String @id @default(cuid())
+  taskId String
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  fromStatus TaskStatus
+  toStatus TaskStatus
+  createdAt DateTime @default(now())
+  @@index([taskId, createdAt])
+}
