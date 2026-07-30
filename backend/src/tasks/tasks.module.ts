@@ -1,0 +1,8 @@
+import {Module} from "@nestjs/common";
+import {AuthModule} from "../auth/auth.module.js";
+import {ProjectsModule} from "../projects/projects.module.js";
+import {TasksController} from "./tasks.controller.js";
+import {TasksGateway} from "./tasks.gateway.js";
+import {TasksService} from "./tasks.service.js";
+@Module({imports:[AuthModule,ProjectsModule],controllers:[TasksController],providers:[TasksService,TasksGateway]})
+export class TasksModule{}

@@ -4,8 +4,8 @@ A production-minded, responsive team task board built for the Full Stack Node.js
 
 ## Stack and architecture
 
-- React 19 + Vite frontend with responsive project and Kanban views
-- Express 5 REST API organized by routes, access policy, validation, and error middleware
+- React 19 + Vite frontend in `frontend/` with responsive project and Kanban views
+- NestJS backend in `backend/`, organized into authentication, projects, tasks, users, and database modules
 - PostgreSQL + Prisma with a committed SQL migration and reproducible seed
 - JWT authentication, bcrypt (12 rounds), role-based admin actions, project-level authorization
 - Socket.IO rooms scoped to projects for real-time task changes
@@ -26,7 +26,7 @@ npm run db:seed
 npm run dev
 ```
 
-Open `http://localhost:5173`. The API runs at `http://localhost:4000`; interactive Swagger documentation is at `http://localhost:4000/api/docs`.
+Open `http://localhost:5173`. The Nest API runs at `http://localhost:4000`; interactive Swagger documentation is at `http://localhost:4000/api/docs`.
 
 ### Seed credentials
 
@@ -62,10 +62,10 @@ npm run db:seed      # create demo accounts/project/tasks
 
 ```bash
 docker compose up --build
-docker compose exec app npm run db:seed
+docker compose exec backend npm run db:seed
 ```
 
-This starts PostgreSQL and the complete production application at `http://localhost:4000`. The Express process serves the compiled React app as well as the API.
+This starts PostgreSQL, the NestJS API at `http://localhost:4000`, and the compiled Vite frontend through Nginx at `http://localhost:5173`.
 
 ## API overview
 
