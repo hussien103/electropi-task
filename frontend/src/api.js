@@ -1,4 +1,5 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+const configuredApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+export const API_URL = configuredApiUrl.startsWith('http') ? configuredApiUrl : `https://${configuredApiUrl}`
 
 export async function api(path, options = {}) {
   const token = localStorage.getItem('token')

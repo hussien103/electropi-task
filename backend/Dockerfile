@@ -14,4 +14,4 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/package.json ./
 EXPOSE 4000
-CMD ["sh","-c","npx prisma migrate deploy && node dist/src/main.js"]
+CMD ["sh","-c","npx prisma migrate deploy && if [ \"$SEED_ON_START\" = \"true\" ]; then npm run db:seed; fi && node dist/src/main.js"]

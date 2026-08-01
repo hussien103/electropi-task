@@ -237,7 +237,30 @@ The global NestJS exception filter returns consistent responses for validation f
 
 ## Deployment
 
-No public deployment URL is included yet. For production:
+No public deployment URL is included yet. A Render Blueprint is included at `render.yaml` and provisions PostgreSQL, the NestJS API, and the React static site together.
+
+### Deploy on Render
+
+1. Commit and push the latest repository files, including `render.yaml`.
+2. Sign in to [Render](https://dashboard.render.com) using GitHub.
+3. Select **New > Blueprint**.
+4. Connect and select `hussien103/electropi-task`.
+5. Render detects `render.yaml`; review the three resources and select **Apply**.
+6. Wait for `teamflow-db`, `teamflow-api`, and `teamflow-web` to finish deploying.
+7. Open the `teamflow-web` URL and test both seeded accounts.
+8. Open `https://<teamflow-api-host>/api/docs` to verify Swagger.
+
+The Blueprint generates `JWT_SECRET`, uses the database's internal connection string, applies migrations, seeds the reviewer accounts, connects frontend/API origins, and enables automatic deployment after future commits. Free Render services may take time to wake after inactivity.
+
+After deployment, replace the placeholders below and commit the real links:
+
+```text
+Live frontend: https://teamflow-web-xxxx.onrender.com
+API documentation: https://teamflow-api-xxxx.onrender.com/api/docs
+Reviewer accounts: use the seeded Admin and Member credentials above
+```
+
+For another production provider:
 
 1. Provision a managed PostgreSQL database.
 2. configure `DATABASE_URL`, a new strong `JWT_SECRET`, and the exact `CLIENT_URL` on the backend host.
@@ -245,14 +268,6 @@ No public deployment URL is included yet. For production:
 4. Build the frontend with `VITE_API_URL` set to the public HTTPS API origin.
 5. Serve both applications over HTTPS.
 6. Add the frontend URL and any reviewer access details to this section before submission.
-
-Suggested submission entry after deployment:
-
-```text
-Live frontend: https://your-frontend.example
-API documentation: https://your-api.example/api/docs
-Reviewer accounts: use the seeded Admin and Member credentials above
-```
 
 ## Submission checklist
 
@@ -264,4 +279,3 @@ Reviewer accounts: use the seeded Admin and Member credentials above
 - [x] Admin and Member test credentials
 - [x] At least five meaningful automated tests (10 included)
 - [ ] Add public live URLs if deployed
-

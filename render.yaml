@@ -1,0 +1,51 @@
+databases:
+  - name: teamflow-db
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: "17"
+    databaseName: teamflow
+    user: teamflow
+    ipAllowList: []
+
+services:
+  - type: web
+    name: teamflow-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeployTrigger: commit
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: teamflow-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        fromService:
+          type: web
+          name: teamflow-web
+          property: host
+      - key: SEED_ON_START
+        value: "true"
+
+  - type: web
+    name: teamflow-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    autoDeployTrigger: commit
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: teamflow-api
+          property: host
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
