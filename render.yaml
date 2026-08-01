@@ -26,10 +26,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CLIENT_URL
-        fromService:
-          type: web
-          name: teamflow-web
-          property: host
+        value: https://teamflow-web-by0g.onrender.com
       - key: SEED_ON_START
         value: "true"
 

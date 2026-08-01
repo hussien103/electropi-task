@@ -1,4 +1,4 @@
-const configuredApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+const configuredApiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:4000').trim().replace(/\/+$/, '')
 export const API_URL = configuredApiUrl.startsWith('http') ? configuredApiUrl : `https://${configuredApiUrl}`
 
 export async function api(path, options = {}) {

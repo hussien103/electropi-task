@@ -4,5 +4,5 @@ export const corsOrigin=(origin:string|undefined,callback:(error:Error|null,allo
  const configuredHost=configuredOrigin?.replace(/^https?:\/\//,"").replace(/\/$/,"");
  const originHost=origin?.replace(/^https?:\/\//,"").replace(/\/$/,"");
  if(!origin||origin===configuredOrigin||(configuredHost&&originHost===configuredHost)||localFrontend.test(origin))return callback(null,true);
- callback(new Error("Origin is not allowed by CORS"),false);
+ callback(null,false);
 };
