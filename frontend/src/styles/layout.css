@@ -1,0 +1,4 @@
+.topbar{height:72px;padding:0 max(4vw,1.25rem);display:flex;justify-content:space-between;align-items:center;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}.user-menu{display:flex;align-items:center;gap:.7rem}
+.avatar,.project-icon{display:grid;place-items:center;background:var(--lime);color:#33411d;font-weight:800;border-radius:9px}.avatar{width:36px;height:36px}.identity{text-align:left}.identity small{display:block;color:var(--muted);font-size:.62rem;letter-spacing:.1em}
+.page{width:min(1400px,100%);margin:auto;padding:4rem max(4vw,1.25rem);text-align:left}.page-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;margin-bottom:2rem}.page-heading h1{font:800 clamp(2.4rem,5vw,4.2rem) Manrope,sans-serif;letter-spacing:-.05em;margin:.35rem 0}.page-heading p{color:var(--muted);margin:0}
+.heading-actions{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;justify-content:flex-end}

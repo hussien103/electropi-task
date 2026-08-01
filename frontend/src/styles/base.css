@@ -1,0 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+:root{--ink:#17231d;--muted:#6d7972;--green:#245b45;--green-dark:#194433;--lime:#dced78;--canvas:#f4f5f0;--line:#dce1d9;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font-family:"DM Sans",sans-serif}button,input,select{font:inherit}button{cursor:pointer}
+.brand{font:800 1rem Manrope,sans-serif;letter-spacing:.17em;color:inherit;text-decoration:none}.kicker{font-size:.7rem;font-weight:800;letter-spacing:.16em;color:#668071}
+.surface{background:var(--white);border:1px solid var(--line);border-radius:15px;box-shadow:0 14px 38px rgba(29,52,39,.06)}
+.primary{border:0;border-radius:9px;background:var(--green);color:#fff;padding:.78rem 1.05rem;font-weight:700}.primary:hover{background:var(--green-dark)}.primary:disabled{opacity:.55}
+.quiet,.danger{border:1px solid var(--line);background:transparent;color:#536158;border-radius:8px;padding:.55rem .75rem}.danger{color:#a73c2d;border-color:#f0d8d3}
+input,select{min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);padding:.78rem;outline:none}input:focus,select:focus{border-color:#739682;box-shadow:0 0 0 3px #deebe3}
+.alert{padding:.8rem 1rem;border-radius:9px;margin-bottom:1rem}.error{background:#fff0ed;color:#9b3425}.success{background:#e8f5ec;color:#28623f}.empty{padding:5rem;display:grid;place-items:center;gap:.5rem;color:var(--muted);text-align:center}

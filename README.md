@@ -1,96 +1,267 @@
 # TeamFlow
 
-A production-minded, responsive team task board built for the Full Stack Node.js technical assessment. It includes every core requirement plus Docker, OpenAPI, real-time updates, pagination/search/sorting, and task status audit history.
+TeamFlow is a full-stack project and task management application built for the Full Stack Node.js Technical Assessment. It provides JWT authentication, role-aware project access, task management, a responsive Kanban board, task filtering and sorting, drag-and-drop status updates, real-time updates, and task status audit history.
 
-## Stack and architecture
+## Features
 
-- React 19 + Vite frontend in `frontend/` with responsive project and Kanban views
-- NestJS backend in `backend/`, organized into authentication, projects, tasks, users, and database modules
-- PostgreSQL + Prisma with a committed SQL migration and reproducible seed
-- JWT authentication, bcrypt (12 rounds), role-based admin actions, project-level authorization
-- Socket.IO rooms scoped to projects for real-time task changes
-- Zod validation, Helmet, CORS, JSON size limits, login rate limiting
+- Register and log in with JWT-based authentication and bcrypt password hashing
+- Admin and Member roles; registration creates Members to prevent privilege escalation
+- Create, view, edit, and delete projects
+- Add or remove project members by email (project owner or Admin)
+- Show only projects available to the authenticated user
+- Create, view, edit, and delete project tasks
+- Task title, description, status, priority, due date, creator, and assignee
+- To Do, In Progress, and Done Kanban columns
+- Search, filtering, sorting, and pagination
+- Drag-and-drop and select-based status updates
+- Members may change only the status of tasks assigned to them
+- Project owners and Admins manage task details
+- Audit history for every task status transition
+- Socket.IO project rooms for real-time task refreshes
+- Responsive desktop and mobile interface with modal forms
+- Centralized API error handling and validation
+- Swagger/OpenAPI documentation
+- Reproducible database seed and 10 automated backend tests
+- Docker Compose development/deployment setup
 
-The browser never decides authorization. Every project/task query is scoped through the authenticated user's membership. Admin role is required for project and membership mutations; any accessible project member may manage its tasks.
+## Technology
 
-## Quick start
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Vite, Socket.IO Client |
+| Backend | Node.js, NestJS, Socket.IO, Zod |
+| Database | PostgreSQL 17, Prisma ORM |
+| Security | JWT, bcrypt (12 rounds), Helmet, CORS |
+| Testing | Vitest |
+| API documentation | Swagger / OpenAPI |
 
-Requirements: Node.js 22+, npm, and PostgreSQL 15+.
+## Architecture
+
+```text
+electropi_task/
+├── backend/
+│   ├── prisma/              # Prisma schema, migrations, and seed
+│   └── src/
+│       ├── auth/            # Registration, login, JWT guard
+│       ├── projects/        # Project access and membership rules
+│       ├── tasks/           # Tasks, status policy, audit log, sockets
+│       ├── users/           # Admin user lookup
+│       └── main.ts          # CORS, security, Swagger, global errors
+├── frontend/
+│   └── src/
+│       ├── components/      # Shared UI and layout components
+│       ├── features/        # Auth, projects, and task UI
+│       ├── hooks/           # Project/board data and socket lifecycle
+│       ├── pages/           # Login, projects, and board pages
+│       └── services/        # API-specific client services
+├── docker-compose.yml
+├── .env.example
+└── package.json             # npm workspace commands
+```
+
+The frontend communicates with a REST API and subscribes to project-scoped Socket.IO events. NestJS controllers delegate to services, where authorization is enforced before Prisma accesses PostgreSQL. The browser UI hides unavailable actions for clarity, but the backend remains the source of truth for every permission check.
+
+## Authorization rules
+
+| Action | Project owner/Admin | Member |
+|---|---:|---:|
+| Create a project | Yes | Yes (becomes owner) |
+| Edit/delete an accessible project | Yes | No |
+| Add/remove members | Yes | No |
+| Create/edit/delete tasks | Yes | No |
+| Change any task status | Yes | No |
+| Change assigned task status | Yes | Yes |
+| View accessible task history | Yes | Yes |
+
+Inaccessible resources return `404` where appropriate to reduce resource-discovery leakage. A project creator cannot be removed from their project.
+
+## Prerequisites
+
+- Node.js 22 or newer
+- npm 10 or newer
+- PostgreSQL 15 or newer, or Docker Desktop
+
+## Local setup
+
+1. Install dependencies from the repository root:
 
 ```bash
-cp .env.example .env
 npm install
+```
+
+2. Copy the sample backend environment file:
+
+```bash
+# macOS/Linux
+cp .env.example backend/.env
+
+# Windows PowerShell
+Copy-Item .env.example backend/.env
+```
+
+3. Start PostgreSQL. The simplest option is the included database container:
+
+```bash
+docker compose up -d db
+```
+
+Alternatively, create a local PostgreSQL database and update `DATABASE_URL` in `backend/.env`.
+
+4. Generate Prisma Client, apply the committed migration, and seed the database:
+
+```bash
 npm run db:generate
-npm run db:migrate
+npm run db:deploy
 npm run db:seed
+```
+
+Use `npm run db:migrate` only while developing new schema migrations.
+
+5. Start the backend and frontend together:
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:5173`. The Nest API runs at `http://localhost:4000`; interactive Swagger documentation is at `http://localhost:4000/api/docs`.
+Open:
 
-### Seed credentials
-
-| Role | Email | Password |
-|---|---|---|
-| Admin | `admin@teamflow.dev` | `Password123!` |
-| Member | `member@teamflow.dev` | `Password123!` |
-
-Change all demonstration passwords in a real environment.
+- Frontend: <http://localhost:5173>
+- API: <http://localhost:4000/api>
+- Swagger UI: <http://localhost:4000/api/docs>
+- OpenAPI JSON: <http://localhost:4000/api/docs-json>
 
 ## Environment variables
 
-| Variable | Purpose | Example |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL connection | `postgresql://teamflow:teamflow@localhost:5432/teamflow?schema=public` |
-| `JWT_SECRET` | JWT signing secret (minimum 32 chars) | Generate a random production secret |
-| `PORT` | API port | `4000` |
-| `CLIENT_URL` | Allowed browser origin | `http://localhost:5173` |
-| `VITE_API_URL` | API origin compiled into frontend | `http://localhost:4000` |
+The committed [.env.example](./.env.example) contains placeholders only. Never commit `backend/.env` or production credentials.
+
+| Variable | Required | Used by | Description | Local example |
+|---|---:|---|---|---|
+| `DATABASE_URL` | Yes | Backend/Prisma | PostgreSQL connection string | `postgresql://teamflow:teamflow@localhost:5432/teamflow?schema=public` |
+| `JWT_SECRET` | Yes | Backend | JWT signing key, minimum 32 characters | Replace the placeholder with a random secret |
+| `PORT` | No | Backend | HTTP API port; defaults to `4000` | `4000` |
+| `CLIENT_URL` | No | Backend | Production frontend origin; local origins are allowed in development | `http://localhost:5173` |
+| `VITE_API_URL` | No | Frontend | Public API origin embedded at frontend build time | `http://localhost:4000` |
+
+For a non-default frontend API URL, create `frontend/.env` containing `VITE_API_URL=...`. Docker passes this value as a frontend build argument.
+
+## Database and seed accounts
+
+Run the seed at any time to restore the two demonstration users, roles, passwords, project memberships, and sample project:
+
+```bash
+npm run db:seed
+```
+
+| Role | Name | Email | Password |
+|---|---|---|---|
+| Admin | Amina Admin | `admin@teamflow.dev` | `Password123!` |
+| Member | Moe Member | `member@teamflow.dev` | `Password123!` |
+
+The seed is idempotent. These credentials are for assessment/demo use only and must be changed for a real deployment.
 
 ## Commands
 
+| Command | Description |
+|---|---|
+| `npm run dev` | Run NestJS and Vite in watch mode |
+| `npm run build` | Build backend and frontend for production |
+| `npm test` | Run all backend automated tests |
+| `npm run db:generate` | Generate Prisma Client |
+| `npm run db:migrate` | Create/apply a development migration |
+| `npm run db:deploy` | Apply committed migrations without prompts |
+| `npm run db:seed` | Create/reset demonstration accounts and sample data |
+| `npm run lint --workspace frontend` | Lint the React application |
+
+## Automated tests
+
 ```bash
-npm run dev          # API and web app
-npm run build        # strict server TypeScript + production frontend
-npm test             # automated backend validation tests
-npm run db:migrate   # create/apply development migrations
-npm run db:deploy    # apply committed migrations in production
-npm run db:seed      # create demo accounts/project/tasks
+npm test
 ```
 
-## Docker
+The suite currently contains 10 tests across two files. It covers authentication validation plus critical task authorization and audit behavior, including assigned-task status updates, rejection of unauthorized task changes, Admin detail changes, and audit record creation.
+
+## API documentation
+
+Interactive Swagger documentation is generated by the running backend:
+
+- Swagger UI: <http://localhost:4000/api/docs>
+- OpenAPI document: <http://localhost:4000/api/docs-json>
+
+Select **Authorize** in Swagger and enter the JWT returned by `POST /api/auth/login` to call protected endpoints.
+
+### Endpoint summary
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `POST` | `/api/auth/register` | Register a Member |
+| `POST` | `/api/auth/login` | Log in and receive a JWT |
+| `GET` | `/api/auth/me` | Get the authenticated user |
+| `GET`, `POST` | `/api/projects` | List/search/page projects or create one |
+| `GET`, `PATCH`, `DELETE` | `/api/projects/:id` | Read or manage a project |
+| `POST` | `/api/projects/:id/members` | Add a registered user by email body |
+| `DELETE` | `/api/projects/:id/members/:userId` | Remove a member |
+| `GET` | `/api/projects/:id/users` | List assignable project members |
+| `GET`, `POST` | `/api/projects/:projectId/tasks` | Query or create tasks |
+| `GET`, `PATCH`, `DELETE` | `/api/projects/:projectId/tasks/:taskId` | Read or manage a task |
+| `GET` | `/api/projects/:projectId/tasks/:taskId/audit` | Read status-change history |
+| `GET` | `/api/users` | Search users as an Admin |
+
+Task queries support `search`, `status`, `priority`, `assigneeId`, `sort`, `order`, `page`, and `limit`. Project queries support `search`, `page`, and `limit`.
+
+## Docker Compose
+
+Build and run PostgreSQL, the backend, and the Nginx-served frontend:
 
 ```bash
 docker compose up --build
 docker compose exec backend npm run db:seed
 ```
 
-This starts PostgreSQL, the NestJS API at `http://localhost:4000`, and the compiled Vite frontend through Nginx at `http://localhost:5173`.
+Then open <http://localhost:5173>. The backend container applies committed Prisma migrations during startup.
 
-## API overview
+Stop the services without deleting database data:
 
-All protected requests use `Authorization: Bearer <token>`.
+```bash
+docker compose down
+```
 
-- `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`
-- `GET|POST /api/projects`, `GET|PATCH|DELETE /api/projects/:projectId`
-- `POST|DELETE /api/projects/:projectId/members/:userId`
-- `GET /api/projects/:projectId/users`
-- `GET|POST /api/projects/:projectId/tasks`
-- `GET|PATCH|DELETE /api/projects/:projectId/tasks/:taskId`
-- `GET /api/users` (Admin)
+To intentionally remove the local Docker database volume as well:
 
-Task list parameters: `status`, `priority`, `assigneeId`, `search`, `page`, `limit`, `sort` (`createdAt`, `dueDate`, `title`, `priority`, `status`), and `order` (`asc`, `desc`). Project lists accept `search`, `page`, and `limit`.
+```bash
+docker compose down -v
+```
 
-Status changes are written atomically to `AuditLog` and returned by the single-task endpoint. Socket clients authenticate during connection, join `project:<id>`, and receive `task:created`, `task:updated`, and `task:deleted`.
+## Centralized error handling
 
-## Design decisions and trade-offs
+The global NestJS exception filter returns consistent responses for validation failures (`422`), authorization and other HTTP exceptions, Prisma unique conflicts (`409`), and unexpected server failures (`500`). The frontend uses one API client to parse field errors, authentication errors, and network failures consistently.
 
-- Registration always creates a Member. Admins come from controlled seed/DB operations, preventing privilege escalation.
-- Inaccessible resources return 404 to avoid leaking their existence.
-- Project creators cannot be removed from membership.
-- Audit records cover status transitions (the assessment's requested scope), not every field edit.
-- Public deployment and repository publishing are intentionally left to the submitter because they require external account ownership.
+## Deployment
 
-## Production checklist
+No public deployment URL is included yet. For production:
 
-Use a managed PostgreSQL instance, rotate the JWT secret, enforce HTTPS, configure the exact frontend origin, run `db:deploy`, build with the production `VITE_API_URL`, and put the API behind a reverse proxy. Add refresh-token rotation and external observability if the product scope expands.
+1. Provision a managed PostgreSQL database.
+2. configure `DATABASE_URL`, a new strong `JWT_SECRET`, and the exact `CLIENT_URL` on the backend host.
+3. Run `npm run db:deploy` before starting the API.
+4. Build the frontend with `VITE_API_URL` set to the public HTTPS API origin.
+5. Serve both applications over HTTPS.
+6. Add the frontend URL and any reviewer access details to this section before submission.
+
+Suggested submission entry after deployment:
+
+```text
+Live frontend: https://your-frontend.example
+API documentation: https://your-api.example/api/docs
+Reviewer accounts: use the seeded Admin and Member credentials above
+```
+
+## Submission checklist
+
+- [ ] Publish the repository or grant the reviewer access
+- [x] Complete setup and architecture documentation
+- [x] Safe `.env.example` without real secrets
+- [x] PostgreSQL migration and reproducible seed
+- [x] Swagger/OpenAPI documentation
+- [x] Admin and Member test credentials
+- [x] At least five meaningful automated tests (10 included)
+- [ ] Add public live URLs if deployed
+
