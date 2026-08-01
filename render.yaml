@@ -16,6 +16,7 @@ services:
     rootDir: backend
     dockerfilePath: ./Dockerfile
     dockerContext: .
+    healthCheckPath: /health
     autoDeployTrigger: commit
     envVars:
       - key: DATABASE_URL
